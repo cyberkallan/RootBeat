@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-28
+
+### Added
+- Rebranded the player as **RootBeat**, with a new name, colors, and launcher icon. Upstream Pixel Music credit and the GPL-3.0 license stay in place.
+- **Audio visualizer** on the full player, driven by the current playback session.
+- **RootBeat Jam**, a same-Wi-Fi listen-together party with a join code, shared playback, and songs added from the host library.
+
 ## [1.6.08] - 2026-07-31
 
 ### Features & Enhancements

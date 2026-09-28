@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
@@ -31,6 +32,7 @@ import com.unshoo.pixelmusic.R
 
 sealed class DrawerDestination(val route: String) {
     object Home : DrawerDestination("home")
+    object Jam : DrawerDestination("jam")
     object Equalizer : DrawerDestination("equalizer")
     object Settings : DrawerDestination("settings")
 }
@@ -113,6 +115,33 @@ private fun DrawerContent(
             },
             selected = selectedRoute == DrawerDestination.Home.route,
             onClick = { onDestinationSelected(DrawerDestination.Home) },
+            modifier = Modifier.padding(vertical = 4.dp),
+            colors = NavigationDrawerItemDefaults.colors(
+                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                unselectedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        )
+
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Groups,
+                    contentDescription = stringResource(R.string.drawer_jam)
+                )
+            },
+            label = {
+                Text(
+                    text = stringResource(R.string.drawer_jam),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            },
+            selected = selectedRoute == DrawerDestination.Jam.route,
+            onClick = { onDestinationSelected(DrawerDestination.Jam) },
             modifier = Modifier.padding(vertical = 4.dp),
             colors = NavigationDrawerItemDefaults.colors(
                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,

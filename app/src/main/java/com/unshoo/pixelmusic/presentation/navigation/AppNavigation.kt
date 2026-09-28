@@ -538,6 +538,17 @@ fun AppNavigation(
                 }
             }
             composable(
+                route = Screen.Jam.route,
+                enterTransition = { enterTransition() },
+                exitTransition = { exitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
+            ) {
+                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
+                    com.unshoo.pixelmusic.presentation.screens.JamScreen(navController = navController)
+                }
+            }
+            composable(
                 route = Screen.Equalizer.route,
                 arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true; defaultValue = null }),
                 enterTransition = { enterTransition() },

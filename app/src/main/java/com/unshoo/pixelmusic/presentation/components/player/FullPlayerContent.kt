@@ -1275,6 +1275,7 @@ private fun FullPlayerPortraitContent(
         verticalArrangement = Arrangement.SpaceAround
     ) {
         albumCoverSection(Modifier)
+        RootBeatVisualizer()
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -1326,6 +1327,7 @@ private fun FullPlayerLandscapeContent(
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             songMetadataSection()
+            RootBeatVisualizer()
             playerProgressSection()
             controlsSection()
         }

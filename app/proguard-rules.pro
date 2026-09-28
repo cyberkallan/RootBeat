@@ -25,6 +25,13 @@
 -dontwarn com.softsynth.**
 
 -keepclassmembers class com.unshoo.pixelmusic.data.model.** { *; }
+-keep class com.unshoo.pixelmusic.data.jam.** { *; }
+-keepclassmembers class com.unshoo.pixelmusic.data.jam.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.unshoo.pixelmusic.data.jam.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
 -keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken

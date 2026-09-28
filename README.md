@@ -1,180 +1,35 @@
-# Pixel Music 🎶 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
+# RootBeat
 
-<p align="center">
-  <img src="assets/LauncherIcon.png" alt="Pixel Music App Icon" width="128"/>
-</p>
+RootBeat is a GPL-3.0-or-later Android music player. It is a fork of [Pixel Music](https://github.com/ianshulyadav/PixelMusicApp), which is itself built on [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS).
 
-<p align="center">
-  <strong>The Ultimate Hybrid Local, Streaming, and Cloud Music Powerhouse for Android</strong><br> 
-  An elegant, feature-rich audio experience built for audiophiles, cloud hoarders, and streaming enthusiasts alike.
-</p>
+The RootBeat build keeps the upstream player and adds:
 
-<p align="center">
-  <img src="assets/homepage.jpg" alt="Home Page" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/explorepage.jpg" alt="Explore Page" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/fullplayer.jpg" alt="Full Player" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/fullplayer_alt.jpg" alt="Full Player Alternate Theme" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/library.jpg" alt="Library" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/analytics.jpg" alt="Listening Analytics" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/song_cards.jpg" alt="Song Cards & Sharing" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/streaming_supports.jpg" alt="Streaming & Sources" width="150" style="border-radius:26px; margin:4px;"/>
-</p>
+- A **RootBeat** name, colors, and launcher icon
+- An **audio visualizer** on the full player
+- **RootBeat Jam**, a listen-together party on the same Wi-Fi
 
-<p align="center">
-  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
-    <img
-      src="assets/support_me_on_kofi_badge_red.png"
-      alt="Support PixelMusic on Ko-fi"
-      width="280">
-  </a>
-</p>
+People on the same network join with a code and the host phone's IP address. Playback stays in sync, and guests can add songs from the host library. The host phone shares the current library track only with people who have the party code.
 
-<p align="center">
-  <a href="https://android.com"><img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android 11+"></a>
-  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0--or--later-blue?style=for-the-badge" alt="GPL-3.0-or-later License"></a>
-  <a href="https://t.me/PixelMusicApp"><img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"></a>
-</p>
+Source and releases: https://github.com/Plussit/RootBeat
 
-> Gratitude to the original open-source authors and contributors whose foundational work made this project possible.
+## Install
 
----
+Android 11 or newer. Download `rootbeat-1.0.0.apk` from this repository's Releases page and install it. If Android asks, allow installs from your browser.
 
-## 📖 What is Pixel Music?
+The 1.0.0 release APK is package `com.rootbeat.player`, version code 100. SHA-256: `c628065c9f72abbbdd8ec3855c2a38f29751a60db54b05745969c7427ce0e27f`
 
-**Pixel Music** is a unified, privacy-first audio powerhouse for Android. It bridges your local offline library, streaming catalogs, and cloud sources under a single, gorgeous interface.
+## Build
 
-- **Local Library:** Scan and play high-resolution files like FLAC, ALAC, WAV, APE, OPUS, OGG, and MP3.
-- **YouTube Music Streaming:** Browse and stream available online catalog content with seamless library synchronization for liked tracks, playlists, and artists.
-- **Telegram Integration:** Connect your Telegram account to stream audio directly from channels, chats, and saved messages.
-- **Google Drive:** Stream your personal cloud library directly from remote drives.
-- **Deezer Artist Artwork:** High-definition artist covers and backdrop artwork automatically cataloged.
-
-The interface adapts dynamically to your album artwork colors using Material You, and is packed with advanced playback features, lyrics, and cross-device connectivity.
-
----
-
-## ⚡ Feature Highlights
-
-| Feature | Description |
-|:---|:---|
-| **Premium Audio Engine** | Media3 ExoPlayer with FFmpeg decoding, 10-band hardware equalizer, bass boost, spatial virtualizer, and EBU R128 loudness normalization. |
-| **Hybrid Streaming** | YouTube Music, Telegram channels, Google Drive, and local files in one unified library. |
-| **Real-Time Synchronized Lyrics** | Synchronized LRC lyrics with manual millisecond offset tuning, offline caching, and live translation support. |
-| **Generative AI Playlists** | Feed custom mood/prompt descriptions to AI models (Gemini, DeepSeek, OpenAI) to generate intelligent queues. |
-| **Smart Mixes (Last.fm)** | Last.fm-powered discovery with 8 generation modes and automated retention pruning policies. |
-| **Dynamic Material You** | Adaptive HSL color extraction from album artwork for player sheets, sliders, and navigation surfaces. |
-| **Snapchat & Story Sharing** | Spotify-style shareable cards with glassmorphism, dynamic pastels, and Snapchat Creative Kit integration. |
-| **Connectivity & Ecosystem** | Android Auto, Chromecast, Wear OS companion app, and Quick Settings playback tiles. |
-| **Interactive Widgets** | Material 3 Glance home-screen widgets with playback controls and artwork displays. |
-
----
-
-## 🚀 Installation & Downloads
-
-This repository contains **official APK releases** for sideloading.
-
-### Prerequisites
-- Android 11 (API 30) or higher
-- ~150 MB free storage
-
-### Steps
-1. Download the latest APK for your device architecture from the [Releases](../../releases) page:
-   - **`arm64-v8a`** — most modern phones (recommended)
-   - **`armeabi-v7a`** — older 32-bit devices
-   - **`x86_64`** — emulators and Chromebooks / tablets
-   - **`universal`** — compatible with all supported devices
-2. Open the downloaded APK file on your device and tap **Install**.
-3. If prompted, allow installation from your browser or file manager in Settings.
-
-> **Tip:** If you are unsure which APK to pick, choose **`arm64-v8a`**. It works on the vast majority of modern Android devices.
-
----
-
-## 📋 Requirements & Permissions
-
-- **Minimum OS:** Android 11 (API 30)
-- **Target OS:** Android 15+ (API 37)
-- **Permissions:** Internet, Bluetooth, media storage read access, notifications, and foreground service (for background playback).
-
----
-
-## 📚 Documentation & Project Links
-
-- 🔒 **[Security Policy](SECURITY.md)** — Release verification, APK checksums, and reporting vulnerabilities.
-- 🛡️ **[Privacy Policy](PRIVACY_POLICY.md)** — Privacy commitments and on-device data handling.
-- ⚖️ **[Disclaimer & Legal Notice](DISCLAIMER.md)** — Third-party service disclaimers and fair-use terms.
-- 📜 **[Provenance & Attribution](PROVENANCE.md)** — Historical context and upstream acknowledgments.
-- 📦 **[Third-Party Notices](THIRD_PARTY_NOTICES.md)** — Open-source software licenses and dependencies.
-- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — Bug reporting and feedback guide.
-- 📝 **[Changelog](CHANGELOG.md)** — Comprehensive version history and updates.
-
----
-
-## ⚖️ Disclaimer & Legal Notice
-
-Pixel Music is an independent, third-party audio player and client. It is **not** associated with Google LLC, YouTube Music, Deezer, Telegram, Snapchat, Last.fm, ListenBrainz, or any of their parent companies.
-
-- **No Media Hosting:** This app does not host, upload, or store copyrighted music. It operates strictly as an interface to scan local device storage or stream media directly from public or user-authenticated APIs.
-- **Fair Use & Client Interface:** This software operates strictly as a local media player and client interface to user-accessible APIs and user storage. Users are responsible for ensuring compliance with applicable copyright laws and platform Terms of Service.
-
-For complete terms, read [DISCLAIMER.md](DISCLAIMER.md).
-
----
-
-## 📦 Upstream Source & GPLv3 Compliance
- 
-This repository contains the complete open-source source code and official APK releases of Pixel Music.
- 
-Pixel Music is derived from and built upon the open-source [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) project (and the foundational PixelPlayer codebase). In accordance with the **GNU General Public License v3.0 (GPL-3.0-or-later)**:
- 
-- **Upstream Open-Source Codebase:** Complete upstream source code is available at [https://github.com/PixelPlayerHQ/PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS).
-- **Source Code in this Repository:** In accordance with GPLv3 Section 6(a), the full machine-readable Corresponding Source code for all Pixel Music builds and modifications is openly published directly in this repository.
-- **Third-Party & Runtime Notices:** Full attribution and component licenses (including FFmpeg, TagLib, and fonts) are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-- **Provenance & Lineage:** Upstream history, base commits, and license references are documented in [PROVENANCE.md](PROVENANCE.md).
-- **Disclaimer & Non-Affiliation:** Independent client disclaimers are documented in [DISCLAIMER.md](DISCLAIMER.md).
-
----
-
-## 📄 License
-
-Pixel Music is licensed under the **GNU General Public License v3.0** (`GPL-3.0-or-later`).
-
-```text
-Pixel Music
-Copyright (C) 2026 Pixel Music Contributors
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+```bash
+./gradlew :app:assembleRelease -Ppixelplayer.enableAbiSplits=false
 ```
 
-For the complete license terms and conditions, see [LICENSE](LICENSE).
+The release is signed with the keystore published next to the APK. That key is for sideload updates of this build. Replace it before any store listing.
 
----
+## License
 
-<p align="center">
-  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
-    <img
-      src="assets/support_me_on_kofi_badge_red.png"
-      alt="Support PixelMusic on Ko-fi"
-      width="280">
-  </a>
-</p>
+RootBeat is free software under **GPL-3.0-or-later**. Copyright remains with the Pixel Music contributors and the upstream authors named in [PROVENANCE.md](PROVENANCE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-<p align="center">
-  <a href="https://t.me/PixelMusicApp">Telegram Channel</a> •
-  <a href="../../releases">Releases</a> •
-  <a href="CHANGELOG.md">Changelog</a> •
-  <a href="PRIVACY_POLICY.md">Privacy Policy</a> •
-  <a href="SECURITY.md">Security</a>
-</p>
+This program is distributed without warranty. See [LICENSE](LICENSE).
+
+RootBeat is not affiliated with Google, YouTube, Spotify, or the upstream Pixel Music maintainers.

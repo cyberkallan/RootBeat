@@ -1,6 +1,12 @@
 # Provenance & Source Compliance
 
-This repository contains the complete open-source source code and official APK releases of **Pixel Music**.
+**RootBeat** is a modified fork of Pixel Music. This repository contains the complete corresponding source for the RootBeat APK, including the audio visualizer and listen-together party session.
+
+The Pixel Music name, original copyright notices, and GPL-3.0-or-later terms are preserved. RootBeat is not affiliated with the upstream maintainers.
+
+---
+
+This repository contains the complete open-source source code and official APK releases of **RootBeat**, derived from **Pixel Music**.
 
 ---
 

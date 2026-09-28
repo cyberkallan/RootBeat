@@ -231,7 +231,8 @@ class PlayerViewModelTest {
             mockMultiSelectionStateHolder,
             mockPlaylistSelectionStateHolder,
             sessionToken,
-            mockMediaControllerFactory
+            mockMediaControllerFactory,
+            com.unshoo.pixelmusic.data.jam.JamPlaybackBridge(),
         )
     }
 

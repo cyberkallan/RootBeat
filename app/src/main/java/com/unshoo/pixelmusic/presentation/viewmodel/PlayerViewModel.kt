@@ -61,6 +61,10 @@ import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.preferences.AlbumArtQuality
 import com.unshoo.pixelmusic.data.preferences.ThemePreference
 import com.unshoo.pixelmusic.data.repository.LyricsSearchResult
+import com.unshoo.pixelmusic.data.jam.JamPlaybackBridge
+import com.unshoo.pixelmusic.data.jam.JamPlaybackSnapshot
+import com.unshoo.pixelmusic.data.jam.JamTrack
+import com.unshoo.pixelmusic.data.jam.JamTrackRef
 import com.unshoo.pixelmusic.data.repository.MusicRepository
 import com.unshoo.pixelmusic.data.service.MusicNotificationProvider
 import com.unshoo.pixelmusic.data.service.MusicService
@@ -102,6 +106,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -279,7 +284,8 @@ class PlayerViewModel @Inject constructor(
     val multiSelectionStateHolder: MultiSelectionStateHolder,
     val playlistSelectionStateHolder: PlaylistSelectionStateHolder,
     private val sessionToken: SessionToken,
-    private val mediaControllerFactory: com.unshoo.pixelmusic.data.media.MediaControllerFactory
+    private val mediaControllerFactory: com.unshoo.pixelmusic.data.media.MediaControllerFactory,
+    private val jamPlaybackBridge: JamPlaybackBridge,
 ) : ViewModel() {
 
     private val _playerUiState = MutableStateFlow(PlayerUiState())
@@ -814,6 +820,7 @@ class PlayerViewModel @Inject constructor(
     lateinit var imageCacheManager: com.unshoo.pixelmusic.data.media.ImageCacheManager
 
     init {
+        bindJamPlayback()
         listeningStatsTracker.initialize(viewModelScope)
         dailyMixStateHolder.initialize(viewModelScope)
         lyricsStateHolder.initialize(viewModelScope, lyricsLoadCallback, playbackStateHolder.stablePlayerState)
@@ -3778,6 +3785,122 @@ class PlayerViewModel @Inject constructor(
         playbackStateHolder.setSliderUiMounted(mounted)
     }
 
+    private fun bindJamPlayback() {
+        jamPlaybackBridge.bind(
+            snapshot = { currentJamSnapshot() },
+            play = { mediaController?.play() },
+            pause = { mediaController?.pause() },
+            seek = { position -> playbackStateHolder.seekTo(position) },
+            next = { nextSong() },
+            previous = { previousSong() },
+            playRemote = { track, position -> playJamStream(track, position) },
+            enqueue = { songId -> enqueueJamSong(songId) },
+            search = { query -> searchJamSongs(query) },
+            contentUri = { songId -> musicRepository.getSong(songId).first()?.contentUriString },
+        )
+    }
+
+    private fun currentJamSnapshot(): JamPlaybackSnapshot? {
+        val song = playbackStateHolder.stablePlayerState.value.currentSong ?: return null
+        if (song.id == "-1" || song.title.isBlank()) return null
+        val controller = mediaController
+        val position = controller?.currentPosition?.coerceAtLeast(0L)
+            ?: playbackStateHolder.currentPosition.value
+        val playing = controller?.isPlaying
+            ?: playbackStateHolder.stablePlayerState.value.isPlaying
+        val duration = controller?.duration?.takeIf { it > 0 } ?: song.duration
+        val queue = _playerUiState.value.currentPlaybackQueue
+        val index = queue.indexOfFirst { it.id == song.id }
+        val upNext = if (index >= 0) queue.drop(index + 1).take(8) else emptyList()
+        return JamPlaybackSnapshot(
+            songId = song.id,
+            title = song.title,
+            artist = song.displayArtist,
+            album = song.album,
+            durationMs = duration.coerceAtLeast(0L),
+            positionMs = position,
+            isPlaying = playing,
+            contentUri = song.contentUriString,
+            upNext = upNext.map { JamTrackRef(it.id, it.title, it.displayArtist) },
+        )
+    }
+
+    private fun playJamStream(track: JamTrack, positionMs: Long) {
+        viewModelScope.launch {
+            val song = Song(
+                id = "jam:${track.id}",
+                title = track.title,
+                artist = track.artist,
+                artistId = -1L,
+                album = track.album,
+                albumId = -1L,
+                path = track.streamUrl,
+                contentUriString = track.streamUrl,
+                albumArtUriString = null,
+                duration = track.durationMs,
+                mimeType = "audio/*",
+                bitrate = null,
+                sampleRate = null,
+            )
+            val item = MediaItem.Builder()
+                .setMediaId(song.id)
+                .setUri(track.streamUrl)
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(track.title)
+                        .setArtist(track.artist)
+                        .setAlbumTitle(track.album)
+                        .setIsPlayable(true)
+                        .build(),
+                )
+                .build()
+            val player = mediaController ?: return@launch
+            player.setMediaItem(item, positionMs.coerceAtLeast(0L))
+            player.prepare()
+            player.play()
+            playbackStateHolder.updateStablePlayerState {
+                it.copy(
+                    currentSong = song,
+                    isPlaying = true,
+                    playWhenReady = true,
+                    totalDuration = track.durationMs.coerceAtLeast(0L),
+                    currentMediaItemIndex = 0,
+                )
+            }
+            playbackStateHolder.setCurrentPosition(positionMs.coerceAtLeast(0L))
+            _playerUiState.update {
+                it.copy(
+                    currentPlaybackQueue = listOf(song).toPlaybackQueue(),
+                    currentQueueSourceName = "RootBeat Jam",
+                )
+            }
+            _isSheetVisible.value = true
+        }
+    }
+
+    private fun enqueueJamSong(songId: String) {
+        viewModelScope.launch {
+            val song = musicRepository.getSong(songId).first() ?: return@launch
+            val player = mediaController ?: return@launch
+            if (player.mediaItemCount == 0 || player.currentMediaItem == null) {
+                internalPlaySongs(listOf(song), song, "RootBeat Jam")
+            } else {
+                val item = buildResolvedPlaybackMediaItem(song)
+                player.addMediaItem(item)
+                val queue = _playerUiState.value.currentPlaybackQueue.toList() + song
+                _playerUiState.update { it.copy(currentPlaybackQueue = queue.toPlaybackQueue()) }
+            }
+        }
+    }
+
+    private suspend fun searchJamSongs(query: String): List<JamTrackRef> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return emptyList()
+        return musicRepository.searchSongs(trimmed).first()
+            .take(8)
+            .map { JamTrackRef(id = it.id, title = it.title, artist = it.displayArtist) }
+    }
+
     fun playPause() {
         val controller = mediaController
         if (controller == null || !controller.isConnected) {
@@ -3981,6 +4104,7 @@ class PlayerViewModel @Inject constructor(
 
 
     override fun onCleared() {
+        jamPlaybackBridge.unbind()
         val controllerToRelease = mediaController
         mediaControllerPlaybackListener?.let { listener ->
             controllerToRelease?.removeListener(listener)

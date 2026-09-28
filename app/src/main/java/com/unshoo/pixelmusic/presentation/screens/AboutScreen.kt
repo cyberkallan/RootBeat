@@ -124,7 +124,7 @@ private val CoreMaintainer = Contributor(
     id = "lostf1sh",
     displayName = "@lostf1sh",
     role = "FOSS Maintainer",
-    detail = "Maintains PixelMusic. GitHub and Telegram: @lostf1sh.",
+    detail = "Upstream Pixel Music maintainer. GitHub and Telegram: @lostf1sh.",
     avatarUrl = "https://github.com/lostf1sh.png",
     iconRes = R.drawable.round_developer_board_24,
     githubUrl = "https://github.com/lostf1sh",
@@ -147,7 +147,7 @@ private val AboutMaintainers = listOf(
     NonFossMaintainer,
 )
 
-private const val SourceRepoUrl = "https://github.com/lostf1sh/PixelMusic"
+private const val SourceRepoUrl = "https://github.com/Plussit/RootBeat"
 private const val FDroidUrl = "https://f-droid.org/packages/com.unshoo.pixelmusic/"
 private const val SponsorUrl = "https://github.com/sponsors/lostf1sh"
 

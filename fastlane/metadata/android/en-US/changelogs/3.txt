@@ -1,4 +1,4 @@
-﻿PixelMusic 0.3.0:
+PixelMusic 0.3.0:
 
 * Offline downloads for Navidrome/Subsonic and Jellyfin, with album downloads and a download manager.
 * Twelve translations with an in-app language picker, including Turkish and Simplified Chinese.

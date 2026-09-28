@@ -1,11 +1,11 @@
 ﻿<resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">PixelMusic</string>
+    <string name="app_name">RootBeat</string>
     <string name="app_name_change_title">App Name Change</string>
-    <string name="app_name_change_message">This app is now PixelMusic. Keep playing!</string>
+    <string name="app_name_change_message">This app is now RootBeat. Keep playing!</string>
     <string name="do_not_show_again">Do not show again</string>
     <string name="dismiss">Dismiss</string>
     <string name="all_files_access_title">Special Permission Required</string>
-    <string name="all_files_access_description">To edit song metadata (.mp3 files), PixelMusic needs special access to all files. This allows us to modify track tags directly. Please grant this permission on the next screen to enable metadata editing.</string>
+    <string name="all_files_access_description">To edit song metadata (.mp3 files), RootBeat needs special access to all files. This allows us to modify track tags directly. Please grant this permission on the next screen to enable metadata editing.</string>
     <string name="grant_permission_button">Grant Permission</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
@@ -127,7 +127,7 @@
     <string name="playlist_share_failed">Share failed: %1$s</string>
     <string name="playlist_none_to_export">No playlists to export</string>
     <string name="playlist_export_failed">Export failed: %1$s</string>
-    <string name="playlist_export_folder_display">Music/PixelMusic Exports</string>
+    <string name="playlist_export_folder_display">Music/RootBeat Exports</string>
     <string name="error_unknown">Unknown error</string>
 
 
@@ -272,5 +272,34 @@
     <string name="musicbrainz_no_results">No suitable recordings were found.</string>
     <string name="musicbrainz_match_score">Match confidence: %1$d%%</string>
     <string name="musicbrainz_applied">MusicBrainz identifiers saved. Missing year and placeholder names were enriched.</string>
+
+    <string name="jam_title">RootBeat Jam</string>
+    <string name="jam_subtitle">Listen together on the same Wi-Fi. One person hosts, everyone hears the same song and can add tracks.</string>
+    <string name="jam_start">Start a party</string>
+    <string name="jam_join">Join a party</string>
+    <string name="jam_code">Party code</string>
+    <string name="jam_host_ip">Host IP address</string>
+    <string name="jam_leave">Leave party</string>
+    <string name="jam_members">Listening now</string>
+    <string name="jam_you_host">Host</string>
+    <string name="jam_search_hint">Search the host library</string>
+    <string name="jam_nothing">Nothing playing yet. Start a song on the host phone.</string>
+    <string name="jam_up_next">Up next</string>
+    <string name="jam_find_nearby">Find nearby parties</string>
+    <string name="jam_play">Play</string>
+    <string name="jam_pause">Pause</string>
+    <string name="jam_next">Next</string>
+    <string name="jam_previous">Previous</string>
+    <string name="jam_share_line">Share this code with people on your Wi-Fi.</string>
+    <string name="jam_status_need_ip">Enter the party code and the IP address shown on the host phone.</string>
+    <string name="jam_status_connecting">Connecting to the party…</string>
+    <string name="jam_status_joined">You are in the party. Playback follows the host.</string>
+    <string name="jam_start_failed">Could not start the party on this network.</string>
+    <string name="jam_join_failed">Could not join. Check the code, IP address, and that both phones are on the same Wi-Fi.</string>
+    <string name="jam_nearby_failed">Nearby discovery is unavailable. Enter the host IP address instead.</string>
+    <string name="jam_track_host_only">This track is playing on the host. Add a song from the host library to hear it here.</string>
+    <string name="jam_visualizer_enable">Enable audio visualizer</string>
+    <string name="jam_back">Back</string>
+    <string name="drawer_jam">RootBeat Jam</string>
 
 </resources>

@@ -28,6 +28,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PixelMusic"
+rootProject.name = "RootBeat"
 include(":app")
 include(":baselineprofile")

@@ -69,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import com.unshoo.pixelmusic.data.equalizer.EqualizerManager
+import com.unshoo.pixelmusic.data.visualizer.AudioVisualizerEngine
 import com.unshoo.pixelmusic.data.equalizer.ExternalAudioEffectSession
 import com.unshoo.pixelmusic.data.model.WidgetThemeColors
 import com.unshoo.pixelmusic.data.preferences.AlbumArtColorAccuracy
@@ -166,6 +167,8 @@ class MusicService : MediaSessionService() {
     lateinit var themePreferencesRepository: ThemePreferencesRepository
     @Inject
     lateinit var equalizerManager: EqualizerManager
+    @Inject
+    lateinit var audioVisualizerEngine: AudioVisualizerEngine
     @Inject
     lateinit var externalAudioEffectSession: ExternalAudioEffectSession
     @Inject
@@ -428,11 +431,13 @@ class MusicService : MediaSessionService() {
             val sessionId = engine.getAudioSessionId()
             if (sessionId != 0) {
                 equalizerManager.attachToAudioSessionIfNeeded(sessionId)
+                audioVisualizerEngine.attach(sessionId)
             }
 
             engine.activeAudioSessionId.collect { newSessionId ->
                 if (newSessionId != 0) {
                     equalizerManager.attachToAudioSessionIfNeeded(newSessionId)
+                    audioVisualizerEngine.attach(newSessionId)
                 }
             }
         }
@@ -959,6 +964,7 @@ class MusicService : MediaSessionService() {
             mediaSession = null
         }
         equalizerManager.release()
+        audioVisualizerEngine.release()
         externalAudioEffectSession.close()
         engine.release()
         controller.release()

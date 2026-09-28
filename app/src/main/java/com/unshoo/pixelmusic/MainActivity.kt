@@ -773,6 +773,7 @@ class MainActivity : ComponentActivity() {
                         DrawerDestination.Home -> navController.navigateSafely(Screen.Home.route) {
                             popUpTo(Screen.Home.route) { inclusive = true }
                         }
+                        DrawerDestination.Jam -> navController.navigateSafely(Screen.Jam.route)
                         DrawerDestination.Equalizer -> navController.navigateSafely(Screen.Equalizer.route)
                         DrawerDestination.Settings -> navController.navigateSafely(Screen.Settings.route)
                     }
