@@ -147,7 +147,7 @@ private val AboutMaintainers = listOf(
     NonFossMaintainer,
 )
 
-private const val SourceRepoUrl = "https://github.com/Plussit/RootBeat"
+private const val SourceRepoUrl = "https://github.com/cyberkallan/RootBeat"
 private const val FDroidUrl = "https://f-droid.org/packages/com.unshoo.pixelmusic/"
 private const val SponsorUrl = "https://github.com/sponsors/lostf1sh"
 

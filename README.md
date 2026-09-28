@@ -10,7 +10,7 @@ The RootBeat build keeps the upstream player and adds:
 
 People on the same network join with a code and the host phone's IP address. Playback stays in sync, and guests can add songs from the host library. The host phone shares the current library track only with people who have the party code.
 
-Source and releases: https://github.com/Plussit/RootBeat
+Source and releases: https://github.com/cyberkallan/RootBeat
 
 ## Install
 
