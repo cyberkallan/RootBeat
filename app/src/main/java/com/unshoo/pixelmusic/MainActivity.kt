@@ -530,6 +530,7 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
         val isSyncing by mainViewModel.isSyncing.collectAsStateWithLifecycle()
         val hasCompletedInitialSync by mainViewModel.hasCompletedInitialSync.collectAsStateWithLifecycle()
+        val isLibraryEmpty by mainViewModel.isLibraryEmpty.collectAsStateWithLifecycle()
         val syncProgress by mainViewModel.syncProgress.collectAsStateWithLifecycle()
 
         val context = LocalContext.current
@@ -577,12 +578,17 @@ class MainActivity : ComponentActivity() {
         var loadingShownTimestamp by remember { mutableStateOf(0L) }
         val minimumDisplayDuration = 1500L
 
-        val shouldPotentiallyShowLoading = isSyncing && !hasCompletedInitialSync
+        val shouldPotentiallyShowLoading =
+            isSyncing && !hasCompletedInitialSync && isLibraryEmpty
 
         LaunchedEffect(shouldPotentiallyShowLoading) {
             if (shouldPotentiallyShowLoading) {
                 delay(300L)
-                if (mainViewModel.isSyncing.value && !mainViewModel.hasCompletedInitialSync.value) {
+                if (
+                    mainViewModel.isSyncing.value &&
+                    !mainViewModel.hasCompletedInitialSync.value &&
+                    mainViewModel.isLibraryEmpty.value
+                ) {
                     canShowLoadingIndicator = true
                     loadingShownTimestamp = System.currentTimeMillis()
                 }
@@ -594,6 +600,14 @@ class MainActivity : ComponentActivity() {
                         delay(remaining)
                     }
                 }
+                canShowLoadingIndicator = false
+                loadingShownTimestamp = 0L
+            }
+        }
+
+        LaunchedEffect(canShowLoadingIndicator) {
+            if (canShowLoadingIndicator) {
+                delay(12_000L)
                 canShowLoadingIndicator = false
                 loadingShownTimestamp = 0L
             }

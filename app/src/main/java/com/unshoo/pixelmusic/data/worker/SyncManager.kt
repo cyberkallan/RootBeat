@@ -10,6 +10,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
+import com.unshoo.pixelmusic.data.remote.youtube.YouTubeLibraryRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -230,8 +231,11 @@ class SyncManager @Inject constructor(
         sharingScope.launch {
             val now = System.currentTimeMillis()
             val lastSyncTimestamp = userPreferencesRepository.getLastSyncTimestamp()
+            val catalogRevision = userPreferencesRepository.getYoutubeCatalogRevision()
             val shouldRunSync =
-                lastSyncTimestamp <= 0L || (now - lastSyncTimestamp) >= MIN_SYNC_INTERVAL_MS
+                lastSyncTimestamp <= 0L ||
+                    catalogRevision < YouTubeLibraryRepository.CATALOG_REVISION ||
+                    (now - lastSyncTimestamp) >= MIN_SYNC_INTERVAL_MS
 
             if (!shouldRunSync) {
                 val ageSeconds = (now - lastSyncTimestamp) / 1000

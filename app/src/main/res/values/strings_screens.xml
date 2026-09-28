@@ -132,7 +132,7 @@
 
     <string name="home_your_mix_title">Your\nMix</string>
     <string name="home_empty_placeholder_title">No data to show yet</string>
-    <string name="home_empty_placeholder_subtitle">Your mix will appear here when RootBeat finds songs or syncs a source.</string>
+    <string name="home_empty_placeholder_subtitle">Songs from this phone and YouTube Music show up here after the library sync.</string>
     <string name="home_empty_placeholder_refresh">Refresh</string>
     <string name="cd_shuffle_play">Shuffle Play</string>
     <string name="cd_album_art_for_title">Album art for %1$s</string>

@@ -27,6 +27,7 @@ import com.unshoo.pixelmusic.data.media.AudioMetadataReader
 import com.unshoo.pixelmusic.data.media.normalizeArtistMetadataValues
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
+import com.unshoo.pixelmusic.data.remote.youtube.YouTubeLibraryRepository
 import com.unshoo.pixelmusic.data.repository.LyricsRepository
 import com.unshoo.pixelmusic.data.service.PlaybackActivityTracker
 import com.unshoo.pixelmusic.utils.AlbumArtCacheManager
@@ -54,6 +55,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 enum class SyncMode {
@@ -104,7 +106,8 @@ constructor(
         private val musicDao: MusicDao,
         private val userPreferencesRepository: UserPreferencesRepository,
         private val lyricsRepository: LyricsRepository,
-        private val cloudSyncCoordinator: CloudSyncCoordinator
+        private val cloudSyncCoordinator: CloudSyncCoordinator,
+        private val youTubeLibraryRepository: YouTubeLibraryRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     private val contentResolver: ContentResolver = appContext.contentResolver
@@ -134,8 +137,10 @@ constructor(
 
                     if (!hasMediaReadPermission()) {
                         Timber.tag(TAG).w(
-                            "Skipping sync: media read permission not granted (setup not finished?)"
+                            "Skipping local scan: media read permission not granted. Loading YouTube Music."
                         )
+                        syncYouTubeCatalog()
+                        userPreferencesRepository.setLastSyncTimestamp(System.currentTimeMillis())
                         return@withContext Result.success()
                     }
 
@@ -243,7 +248,8 @@ constructor(
                         directoryResolver,
                         syncPlan.forceProcessAll,
                         syncPlan.resetExistingLocalData,
-                        progressBatchSize
+                        progressBatchSize,
+                        readEmbeddedMetadata = !isFreshInstall
                     ) { current, total, phaseOrdinal ->
                         setProgress(
                             workDataOf(
@@ -352,6 +358,7 @@ constructor(
                     }
 
                     userPreferencesRepository.setLastSyncTimestamp(startTime)
+                    syncYouTubeCatalog()
 
                     val endTime = System.currentTimeMillis()
                     Timber.tag(TAG)
@@ -806,6 +813,25 @@ constructor(
             existingDateModifiedSeconds == raw.dateModified
     }
 
+    private suspend fun syncYouTubeCatalog() {
+        setProgress(
+            workDataOf(
+                PROGRESS_PHASE to SyncProgress.SyncPhase.SYNCING_CLOUD.ordinal
+            )
+        )
+        try {
+            val finished = withTimeoutOrNull(YOUTUBE_CATALOG_TIMEOUT_MS) {
+                youTubeLibraryRepository.syncPublicCatalog()
+                true
+            }
+            if (finished == null) {
+                Timber.tag(TAG).w("YouTube Music catalog sync timed out")
+            }
+        } catch (error: Exception) {
+            Timber.tag(TAG).w(error, "YouTube Music catalog sync failed")
+        }
+    }
+
     private suspend fun fetchMusicFromMediaStore(
             sinceTimestamp: Long,
             forceMetadata: Boolean,
@@ -813,6 +839,7 @@ constructor(
             forceProcessAll: Boolean,
             resetExistingLocalData: Boolean,
             progressBatchSize: Int,
+            readEmbeddedMetadata: Boolean,
             onProgress: suspend (current: Int, total: Int, phaseOrdinal: Int) -> Unit
     ): List<ScannedSong> = traceAsyncSection("SyncWorker.fetchMusicFromMediaStore") {
         val deepScan = forceMetadata
@@ -992,7 +1019,8 @@ constructor(
                                     raw = raw,
                                     genreMap = genreMap,
                                     deepScan = deepScan,
-                                    forceAlbumArtRefresh = deepScan || localSong != null
+                                    forceAlbumArtRefresh = deepScan || localSong != null,
+                                    readEmbeddedMetadata = readEmbeddedMetadata
                                 )
 
                             val song = if (localSong != null) {
@@ -1051,7 +1079,8 @@ constructor(
             raw: RawSongData,
             genreMap: Map<Long, String>,
             deepScan: Boolean,
-            forceAlbumArtRefresh: Boolean
+            forceAlbumArtRefresh: Boolean,
+            readEmbeddedMetadata: Boolean
     ): ScannedSong {
         val parentDir = java.io.File(raw.filePath).parent ?: ""
         val contentUriString =
@@ -1083,7 +1112,7 @@ constructor(
         var year = raw.year
         var genre: String? = genreMap[raw.id] ?: raw.genre
 
-        val shouldAugmentMetadata = shouldReadEmbeddedMetadata(
+        val shouldAugmentMetadata = readEmbeddedMetadata && shouldReadEmbeddedMetadata(
             filePath = raw.filePath,
             deepScan = deepScan,
             rawArtist = raw.artist,
@@ -1196,6 +1225,7 @@ constructor(
         const val INPUT_RUN_MAINTENANCE = "input_run_maintenance"
         const val INPUT_SYNC_MODE = "input_sync_mode"
         private const val MAX_PLAYBACK_DEFERRALS = 5
+        private const val YOUTUBE_CATALOG_TIMEOUT_MS = 30_000L
 
         const val PROGRESS_CURRENT = "progress_current"
         const val PROGRESS_TOTAL = "progress_total"

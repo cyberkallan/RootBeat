@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-28
+
+### Fixed
+- The first library scan no longer stays on “Preparing your library” while it reads embedded tags from every file. Local songs are indexed from the phone’s music library first.
+- YouTube Music songs are added to the library from the public catalog, next to music stored on the device. Playback resolves the audio stream when a song starts.
+
 ## [1.0.0] - 2026-09-28
 
 ### Added

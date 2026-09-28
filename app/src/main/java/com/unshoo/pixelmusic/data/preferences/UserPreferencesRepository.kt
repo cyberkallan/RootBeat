@@ -198,6 +198,7 @@ constructor(
         val PINNED_PRESETS = stringPreferencesKey("pinned_presets_json")
 
         val LAST_SYNC_TIMESTAMP = longPreferencesKey("last_sync_timestamp")
+        val YOUTUBE_CATALOG_REVISION = intPreferencesKey("youtube_catalog_revision")
         val DIRECTORY_RULES_VERSION = intPreferencesKey("directory_rules_version")
         val LAST_APPLIED_DIRECTORY_RULES_VERSION =
             intPreferencesKey("last_applied_directory_rules_version")
@@ -534,6 +535,16 @@ constructor(
     suspend fun setLastSyncTimestamp(timestamp: Long) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_SYNC_TIMESTAMP] = timestamp
+        }
+    }
+
+    suspend fun getYoutubeCatalogRevision(): Int {
+        return dataStore.data.first()[PreferencesKeys.YOUTUBE_CATALOG_REVISION] ?: 0
+    }
+
+    suspend fun setYoutubeCatalogRevision(revision: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.YOUTUBE_CATALOG_REVISION] = revision
         }
     }
 

@@ -61,6 +61,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 
 import com.unshoo.pixelmusic.data.navidrome.NavidromeStreamProxy
+import com.unshoo.pixelmusic.data.remote.youtube.YouTubeLibraryRepository
 
 data class ActiveDecoderInfo(
     val name: String,
@@ -224,6 +225,7 @@ class DualPlayerEngine @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val navidromeStreamProxy: NavidromeStreamProxy,
     private val jellyfinStreamProxy: com.unshoo.pixelmusic.data.jellyfin.JellyfinStreamProxy,
+    private val youTubeLibraryRepository: YouTubeLibraryRepository,
     private val cloudOfflineRepository: CloudOfflineRepository
 ) {
     private companion object {
@@ -231,8 +233,8 @@ class DualPlayerEngine @Inject constructor(
         private const val POST_TRANSITION_OFFLOAD_GUARD_MS = 2_000L
         private const val MAX_AUXILIARY_TIMELINE_ITEMS = 200
         private val LOCAL_MEDIA_SCHEMES = setOf("content", "file", "android.resource")
-        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "navidrome", "jellyfin")
-        private val CLOUD_PROXY_SCHEMES = setOf("navidrome", "jellyfin")
+        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "navidrome", "jellyfin", "youtube")
+        private val CLOUD_PROXY_SCHEMES = setOf("navidrome", "jellyfin", "youtube")
     }
 
     data class TransitionTarget(
@@ -1233,6 +1235,7 @@ class DualPlayerEngine @Inject constructor(
                 when (uri.scheme) {
                     "navidrome" -> resolveNavidromeUriAsync(uriString)
                     "jellyfin" -> resolveJellyfinUriAsync(uriString)
+                    "youtube" -> resolveYouTubeUriAsync(uriString)
                     else -> null
                 }
             },
@@ -1244,6 +1247,12 @@ class DualPlayerEngine @Inject constructor(
         if (!navidromeStreamProxy.ensureReady(5_000L)) return@withContext null
         navidromeStreamProxy.warmUpStreamUrl(uriString)
         navidromeStreamProxy.resolveNavidromeUri(uriString)?.let { Uri.parse(it) }
+    }
+
+    private suspend fun resolveYouTubeUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
+        val videoId = uriString.removePrefix("youtube://").substringBefore('?').trim()
+        if (videoId.isBlank()) return@withContext null
+        youTubeLibraryRepository.resolveAudioUrl(videoId)?.let(Uri::parse)
     }
 
     private suspend fun resolveJellyfinUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
