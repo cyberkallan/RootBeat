@@ -6,6 +6,8 @@ import com.unshoo.pixelmusic.data.database.MusicDao
 import com.unshoo.pixelmusic.data.database.SongArtistCrossRef
 import com.unshoo.pixelmusic.data.database.SongEntity
 import com.unshoo.pixelmusic.data.database.SourceType
+import com.unshoo.pixelmusic.data.database.toSong
+import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.stream.CloudMusicUtils
 import timber.log.Timber
@@ -26,15 +28,54 @@ class YouTubeLibraryRepository @Inject constructor(
             return
         }
 
+        val batch = buildBatch(tracks, indexDates = true)
+        val currentIds = batch.songs.map { it.id }.toSet()
+        val removedIds = musicDao.getReplaceableYoutubeSongIds().filter { it !in currentIds }
+        upsert(batch, deletedSongIds = removedIds)
+        userPreferencesRepository.setYoutubeCatalogRevision(CATALOG_REVISION)
+        Timber.tag(TAG).i(
+            "YouTube Music catalog synced: ${batch.songs.size} songs, removed ${removedIds.size}"
+        )
+    }
+
+    /**
+     * Looks up songs on YouTube Music and stores them without removing the rest of the catalog.
+     * Results stay in the order YouTube returned.
+     */
+    suspend fun search(query: String): List<Song> {
+        val tracks = youTubeMusicClient.search(query)
+        if (tracks.isEmpty()) return emptyList()
+        val batch = buildBatch(tracks, indexDates = false)
+        upsert(batch, deletedSongIds = emptyList())
+        val saved = musicDao.getSongsByIdsListSimple(batch.songs.map { it.id }).associateBy { it.id }
+        return batch.songs.mapNotNull { entity -> saved[entity.id]?.toSong() }
+    }
+
+    suspend fun resolveAudioUrl(videoId: String): String? = youTubeMusicClient.resolveAudioUrl(videoId)
+
+    private suspend fun upsert(batch: LibraryBatch, deletedSongIds: List<Long>) {
+        musicDao.incrementalSyncMusicData(
+            songs = batch.songs,
+            albums = batch.albums.values.toList(),
+            artists = batch.artists.values.toList(),
+            crossRefs = batch.crossRefs,
+            deletedSongIds = deletedSongIds
+        )
+    }
+
+    private suspend fun buildBatch(tracks: List<YouTubeTrack>, indexDates: Boolean): LibraryBatch {
+        val existing = musicDao.getSongsByIdsListSimple(tracks.map { songId(it.videoId) }).associateBy { it.id }
         val songs = ArrayList<SongEntity>(tracks.size)
         val artists = LinkedHashMap<Long, ArtistEntity>()
         val albums = LinkedHashMap<Long, AlbumEntity>()
         val crossRefs = ArrayList<SongArtistCrossRef>(tracks.size)
-        val now = System.currentTimeMillis()
 
         tracks.forEachIndexed { index, track ->
             val songId = songId(track.videoId)
-            val artistNames = CloudMusicUtils.parseArtistNames(track.artist)
+            val previous = existing[songId]
+            val artistNames = CloudMusicUtils.parseArtistNames(
+                if (previous?.artistUserEdited == true) previous.artistName else track.artist
+            )
             val primaryArtist = artistNames.first()
             val primaryArtistId = artistId(primaryArtist)
             artistNames.forEachIndexed { artistIndex, name ->
@@ -51,7 +92,11 @@ class YouTubeLibraryRepository @Inject constructor(
                     )
                 )
             }
-            val albumName = track.album.ifBlank { "YouTube Music" }
+            val albumName = if (previous?.albumUserEdited == true) {
+                previous.albumName
+            } else {
+                track.album.ifBlank { "YouTube Music" }
+            }
             val albumKey = albumId(primaryArtist, albumName)
             albums.putIfAbsent(
                 albumKey,
@@ -70,44 +115,50 @@ class YouTubeLibraryRepository @Inject constructor(
             songs.add(
                 SongEntity(
                     id = songId,
-                    title = track.title,
-                    artistName = track.artist.ifBlank { primaryArtist },
+                    title = if (previous?.titleUserEdited == true) previous.title else track.title,
+                    artistName = if (previous?.artistUserEdited == true) {
+                        previous.artistName
+                    } else {
+                        track.artist.ifBlank { primaryArtist }
+                    },
                     artistId = primaryArtistId,
                     albumArtist = primaryArtist,
                     albumArtistId = primaryArtistId,
                     albumName = albumName,
                     albumId = albumKey,
                     contentUriString = "youtube://${track.videoId}",
-                    albumArtUriString = track.thumbnailUrl,
-                    duration = track.durationMs,
-                    genre = "YouTube Music",
+                    albumArtUriString = track.thumbnailUrl ?: previous?.albumArtUriString,
+                    duration = track.durationMs.takeIf { it > 0L } ?: previous?.duration ?: 0L,
+                    genre = if (previous?.genreUserEdited == true) previous.genre else "YouTube Music",
                     filePath = "youtube://${track.videoId}",
                     parentDirectoryPath = YOUTUBE_FOLDER,
-                    dateAdded = CATALOG_DATE_ADDED - index,
-                    mimeType = null,
+                    isFavorite = previous?.isFavorite ?: false,
+                    lyrics = previous?.lyrics,
+                    trackNumber = previous?.trackNumber ?: 0,
+                    dateAdded = previous?.dateAdded ?: if (indexDates) {
+                        CATALOG_DATE_ADDED - index
+                    } else {
+                        CATALOG_DATE_ADDED
+                    },
+                    mimeType = previous?.mimeType,
                     sourceType = SourceType.YOUTUBE,
-                    mediaStoreDateAdded = 0L,
-                    mediaStoreDateModified = 0L
+                    artistsJson = previous?.artistsJson,
+                    titleUserEdited = previous?.titleUserEdited ?: false,
+                    artistUserEdited = previous?.artistUserEdited ?: false,
+                    albumUserEdited = previous?.albumUserEdited ?: false,
+                    genreUserEdited = previous?.genreUserEdited ?: false
                 )
             )
         }
-
-        val currentIds = songs.map { it.id }.toSet()
-        val removedIds = musicDao.getReplaceableYoutubeSongIds().filter { it !in currentIds }
-        musicDao.incrementalSyncMusicData(
-            songs = songs,
-            albums = albums.values.toList(),
-            artists = artists.values.toList(),
-            crossRefs = crossRefs,
-            deletedSongIds = removedIds
-        )
-        userPreferencesRepository.setYoutubeCatalogRevision(CATALOG_REVISION)
-        Timber.tag(TAG).i(
-            "YouTube Music catalog synced: ${songs.size} songs, removed ${removedIds.size} (at $now)"
-        )
+        return LibraryBatch(songs, albums, artists, crossRefs)
     }
 
-    suspend fun resolveAudioUrl(videoId: String): String? = youTubeMusicClient.resolveAudioUrl(videoId)
+    private data class LibraryBatch(
+        val songs: List<SongEntity>,
+        val albums: Map<Long, AlbumEntity>,
+        val artists: Map<Long, ArtistEntity>,
+        val crossRefs: List<SongArtistCrossRef>
+    )
 
     private fun songId(videoId: String): Long =
         -(SONG_ID_OFFSET + videoId.hashCode().toLong().absoluteValue)

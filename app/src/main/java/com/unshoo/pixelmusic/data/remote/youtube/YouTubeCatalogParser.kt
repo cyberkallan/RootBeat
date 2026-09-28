@@ -21,10 +21,14 @@ object YouTubeCatalogParser {
     }
 
     fun isUsefulCatalogTrack(track: YouTubeTrack): Boolean {
-        if (!videoIdPattern.matches(track.videoId) || track.title.isBlank()) return false
+        if (!isSearchTrack(track)) return false
         if (track.durationMs <= 0L) return true
         return track.durationMs in MIN_CATALOG_DURATION_MS..MAX_CATALOG_DURATION_MS
     }
+
+    /** Live search keeps the song even when it is longer than the home-catalog cap. */
+    fun isSearchTrack(track: YouTubeTrack): Boolean =
+        videoIdPattern.matches(track.videoId) && track.title.isNotBlank()
 
     private fun walk(node: Any?, tracks: LinkedHashMap<String, YouTubeTrack>) {
         when (node) {
@@ -115,6 +119,7 @@ object YouTubeCatalogParser {
         while (keys.hasNext()) {
             val child = node.opt(keys.next())
             val found = when (child) {
+                null -> null
                 is JSONObject -> findVideoId(child)
                 is JSONArray -> {
                     var match: String? = null

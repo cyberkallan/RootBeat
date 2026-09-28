@@ -22,7 +22,7 @@ RootBeat is a GPL-3.0-or-later fork of [Pixel Music](https://github.com/ianshuly
 Android 11 or newer.
 
 1. Open the [latest release](https://github.com/cyberkallan/RootBeat/releases/latest).
-2. Download `rootbeat-1.0.1.apk`.
+2. Download `rootbeat-1.0.2.apk`.
 3. Install it. If Android asks, allow installs from your browser.
 
 The package name is `com.rootbeat.player`. The SHA-256 checksum is listed on the release page.
@@ -31,7 +31,9 @@ Updating over an older RootBeat build needs the same sideload signing key. Repla
 
 ## Library
 
-After setup, RootBeat indexes audio on the phone and loads songs from the public YouTube Music catalog into the same library. Home, search, albums, and artists use that combined list.
+After setup, RootBeat indexes audio on the phone and loads songs from the public YouTube Music catalog into the same library. Home, albums, and artists use that combined list.
+
+Search does not stop at songs already stored on the phone. For All and Songs, it also calls YouTube Music’s public search (`music.youtube.com/youtubei/v1/search`, web client `WEB_REMIX`) and shows those tracks next to local matches. That is the same public catalog API the YouTube Music website uses. It is not a signed-in personal library, so liked songs and private playlists from a YouTube account are not included.
 
 - Local files play offline.
 - YouTube Music songs need a network connection. The stream is requested when playback starts.

@@ -6,6 +6,7 @@ Features:
 
 * Local music scanning and playback for common audio formats
 * YouTube Music songs in the same library as files stored on the device
+* Search that queries the public YouTube Music catalog and mixes those songs with local results
 * Gapless playback, crossfade, custom transitions, queue controls, shuffle, repeat, and sleep timer
 * Albums, artists, genres, folders, favorites, playlists, lyrics, and listening stats
 * Smart playlists generated from local listening history and favorites

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-09-28
+
+### Fixed
+- Search now asks YouTube Music’s public catalog (the InnerTube search used by music.youtube.com) and lists those songs together with matches already on the phone. Typing a song name no longer returns only local files.
+
 ## [1.0.1] - 2026-09-28
 
 ### Fixed

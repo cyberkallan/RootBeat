@@ -3,6 +3,8 @@
 import com.unshoo.pixelmusic.data.model.SearchFilterType
 import com.unshoo.pixelmusic.data.model.SearchHistoryItem
 import com.unshoo.pixelmusic.data.model.SearchResultItem
+import com.unshoo.pixelmusic.data.model.Song
+import com.unshoo.pixelmusic.data.remote.youtube.YouTubeLibraryRepository
 import com.unshoo.pixelmusic.data.repository.MusicRepository
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -16,7 +18,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -37,6 +42,7 @@ import kotlinx.coroutines.FlowPreview
 @Singleton
 class SearchStateHolder @Inject constructor(
     private val musicRepository: MusicRepository,
+    private val youTubeLibraryRepository: YouTubeLibraryRepository,
 ) {
     private companion object {
         const val SEARCH_DEBOUNCE_MS = 300L
@@ -91,18 +97,12 @@ class SearchStateHolder @Inject constructor(
 
                     try {
                         val currentFilter = _selectedSearchFilter.value
-                        musicRepository.searchAll(normalizedQuery, currentFilter).collect { resultsList ->
-                            val sortedResults = resultsList.sortedWith(
-                                compareBy { result ->
-                                    when (result) {
-                                        is SearchResultItem.SongItem -> 0
-                                        is SearchResultItem.AlbumItem -> 1
-                                        is SearchResultItem.ArtistItem -> 2
-                                        is SearchResultItem.PlaylistItem -> 3
-                                    }
-                                }
-                            )
-
+                        combine(
+                            musicRepository.searchAll(normalizedQuery, currentFilter),
+                            youtubeSearch(normalizedQuery, currentFilter)
+                        ) { localResults, youtubeSongs ->
+                            mergeSearchResults(localResults, youtubeSongs)
+                        }.collect { sortedResults ->
                             if (request.requestId != latestSearchRequestId.get()) {
                                 return@collect
                             }
@@ -121,6 +121,47 @@ class SearchStateHolder @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun youtubeSearch(query: String, filter: SearchFilterType): Flow<List<Song>> = flow {
+        emit(emptyList())
+        if (filter != SearchFilterType.ALL && filter != SearchFilterType.SONGS) return@flow
+        try {
+            emit(youTubeLibraryRepository.search(query))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.w(error, "YouTube Music search failed for %s", query)
+        }
+    }
+
+    private fun mergeSearchResults(
+        localResults: List<SearchResultItem>,
+        youtubeSongs: List<Song>
+    ): List<SearchResultItem> {
+        val withYouTube = if (youtubeSongs.isEmpty()) {
+            localResults
+        } else {
+            val localUris = localResults.mapNotNull { result ->
+                (result as? SearchResultItem.SongItem)?.song?.contentUriString
+            }.toSet()
+            val localSongs = localResults.filterIsInstance<SearchResultItem.SongItem>()
+            val otherResults = localResults.filter { it !is SearchResultItem.SongItem }
+            val remoteSongs = youtubeSongs
+                .filter { it.contentUriString !in localUris }
+                .map { SearchResultItem.SongItem(it) }
+            localSongs + remoteSongs + otherResults
+        }
+        return withYouTube.sortedWith(
+            compareBy { result ->
+                when (result) {
+                    is SearchResultItem.SongItem -> 0
+                    is SearchResultItem.AlbumItem -> 1
+                    is SearchResultItem.ArtistItem -> 2
+                    is SearchResultItem.PlaylistItem -> 3
+                }
+            }
+        )
     }
 
     fun updateSearchFilter(filterType: SearchFilterType) {

@@ -33,6 +33,7 @@ class YouTubeCatalogParserTest {
         val song = mix.copy(durationMs = 180_000L, title = "Night Drive")
 
         assertFalse(YouTubeCatalogParser.isUsefulCatalogTrack(mix))
+        assertTrue(YouTubeCatalogParser.isSearchTrack(mix))
         assertTrue(YouTubeCatalogParser.isUsefulCatalogTrack(song))
     }
 
